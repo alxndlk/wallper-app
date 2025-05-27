@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Xcode
+*.xcuserdata
+*.xcuserstate
+*.xcworkspace
+build/
+DerivedData/
+
+# SwiftPM
+.build/
+
+# Env
+Wallper/env.txt
