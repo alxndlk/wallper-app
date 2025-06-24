@@ -5,6 +5,7 @@ struct VideoData: Identifiable, Codable, Equatable {
     let id: String
     var url: String
     var author: String?
+    var author_name: String?
     var likes: Int
     var category: String?
     var age: String?
@@ -20,6 +21,7 @@ struct RawVideoMetadata: Codable {
     let id: String
     let likes: Int?
     let author: String?
+    let author_name: String?
     let category: String?
     let createdAt: String?
     let age: String?
@@ -38,6 +40,7 @@ class VideoLibraryStore: ObservableObject {
     @Published var downloadedVideos: [VideoData] = []
     @Published var likedVideos: [VideoData] = []
     @Published var isLoaded: Bool = false
+    @Published private(set) var likedVideoIDs: Set<String> = []
 
     private static let likedKey = "liked_video_ids"
 
@@ -72,6 +75,7 @@ class VideoLibraryStore: ObservableObject {
                     id: meta.id,
                     url: "\(wallpaperBase)\(id).mp4",
                     author: meta.author,
+                    author_name: meta.author_name,
                     likes: meta.likes ?? 0,
                     category: meta.category,
                     age: meta.age,
@@ -89,6 +93,7 @@ class VideoLibraryStore: ObservableObject {
                     id: meta.id,
                     url: "\(userBase)\(id).mp4",
                     author: meta.author,
+                    author_name: meta.author_name,
                     likes: meta.likes ?? 0,
                     category: meta.category,
                     age: meta.age,
@@ -105,6 +110,16 @@ class VideoLibraryStore: ObservableObject {
             self.allVideos = wallpaperData + userVideoData
             self.loadLikedVideos()
             self.loadCachedVideos()
+
+            for video in downloadedVideos where video.isPrivate == true {
+                if !userGeneratedVideos.contains(where: { $0.id == video.id }) {
+                    userGeneratedVideos.insert(video, at: 0)
+                }
+                if !allVideos.contains(where: { $0.id == video.id }) {
+                    allVideos.insert(video, at: 0)
+                }
+            }
+
             self.isLoaded = true
         } catch {
             print("Error loading videos:", error.localizedDescription)
@@ -114,37 +129,41 @@ class VideoLibraryStore: ObservableObject {
 
 
     func loadLikedVideos() {
-        let likedIDs = Self.allLikedIDs()
-        self.likedVideos = allVideos.filter { likedIDs.contains($0.id) }
+        likedVideoIDs = Self.allLikedIDs()
+        likedVideos = allVideos.filter { likedVideoIDs.contains($0.id) }
     }
-
+    
     static func allLikedIDs() -> Set<String> {
         Set(UserDefaults.standard.stringArray(forKey: likedKey) ?? [])
     }
 
     func likeVideo(_ id: String) {
-        var liked = Self.allLikedIDs()
-        liked.insert(id)
-        UserDefaults.standard.set(Array(liked), forKey: Self.likedKey)
-        loadLikedVideos()
+        likedVideoIDs.insert(id)
+        UserDefaults.standard.set(Array(likedVideoIDs), forKey: Self.likedKey)
+        likedVideos = allVideos.filter { likedVideoIDs.contains($0.id) }
     }
 
     func unlikeVideo(_ id: String) {
-        var liked = Self.allLikedIDs()
-        liked.remove(id)
-        UserDefaults.standard.set(Array(liked), forKey: Self.likedKey)
-        loadLikedVideos()
+        likedVideoIDs.remove(id)
+        UserDefaults.standard.set(Array(likedVideoIDs), forKey: Self.likedKey)
+        likedVideos = allVideos.filter { likedVideoIDs.contains($0.id) }
     }
 
     func isLiked(_ id: String) -> Bool {
-        Self.allLikedIDs().contains(id)
+        likedVideoIDs.contains(id)
     }
-    
+
     func likes(for id: String) -> Int {
         allVideos.first(where: { $0.id == id })?.likes ?? 0
     }
 
+    @MainActor
     func updateLikes(videoID: String, increment: Int) async {
+        if let index = allVideos.firstIndex(where: { $0.id == videoID }) {
+            allVideos[index].likes += increment
+            objectWillChange.send()
+        }
+
         guard let urlString = Env.shared.get("LAMBDA_LIKES_URL"),
               let url = URL(string: urlString) else {
             print("❌ Invalid or missing LAMBDA_LIKES_URL")
@@ -231,7 +250,7 @@ class VideoLibraryStore: ObservableObject {
         let cachedFiles = (try? FileManager.default.contentsOfDirectory(at: appSupportDir, includingPropertiesForKeys: nil)) ?? []
         let cachedMP4s = cachedFiles.filter { $0.pathExtension.lowercased() == "mp4" }
 
-        let all = allVideos + userGeneratedVideos
+        let all = wallpapersVideos + userGeneratedVideos
         var result: [VideoData] = []
 
         for fileURL in cachedMP4s {
@@ -244,6 +263,7 @@ class VideoLibraryStore: ObservableObject {
                     id: id,
                     url: fileURL.absoluteString,
                     author: "Local",
+                    author_name: "",
                     likes: 0,
                     category: "Custom",
                     age: "0+",
@@ -258,6 +278,16 @@ class VideoLibraryStore: ObservableObject {
         }
 
         downloadedVideos = result
+        
+        for i in allVideos.indices {
+            let id = allVideos[i].id
+            if allVideos[i].isPrivate == true {
+                let fileURL = appSupportDir.appendingPathComponent("\(id).mp4")
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    allVideos[i].url = fileURL.absoluteString
+                }
+            }
+        }
     }
 
 
@@ -288,6 +318,7 @@ class VideoLibraryStore: ObservableObject {
                 id: id,
                 url: destinationURL.absoluteString,
                 author: "Local",
+                author_name: "",
                 likes: 0,
                 category: "Custom",
                 age: "0+",
@@ -312,6 +343,36 @@ class VideoLibraryStore: ObservableObject {
             print("❌ Failed to import video:", error.localizedDescription)
         }
     }
+    
+    func fixLocalVideoURLs() {
+        let appSupportDir = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            .first!
+            .appendingPathComponent("Wallper/Videos", isDirectory: true)
+
+        for i in downloadedVideos.indices {
+            let id = downloadedVideos[i].id
+            let filePath = appSupportDir.appendingPathComponent("\(id).mp4")
+            if FileManager.default.fileExists(atPath: filePath.path) {
+                downloadedVideos[i].url = filePath.absoluteString
+            } else {
+                print("⚠️ File not found for downloaded video: \(id)")
+            }
+        }
+
+        for i in allVideos.indices {
+            let id = allVideos[i].id
+            if allVideos[i].isPrivate == true {
+                let filePath = appSupportDir.appendingPathComponent("\(id).mp4")
+                if FileManager.default.fileExists(atPath: filePath.path) {
+                    allVideos[i].url = filePath.absoluteString
+                } else {
+                    print("⚠️ File not found for local allVideos: \(id)")
+                }
+            }
+        }
+    }
+
 
 
 
@@ -323,6 +384,7 @@ class VideoLibraryStore: ObservableObject {
                         id: meta.id,
                         url: "",
                         author: meta.author,
+                        author_name: meta.author_name,
                         likes: meta.likes ?? 0,
                         category: meta.category,
                         age: meta.age,
@@ -379,6 +441,7 @@ func fetchBatchVideoMetadata(for ids: [String], completion: @escaping ([String: 
                 }
 
                 do {
+                    
                     let decoded = try JSONDecoder().decode([RawVideoMetadata].self, from: data)
 
                     for item in decoded {

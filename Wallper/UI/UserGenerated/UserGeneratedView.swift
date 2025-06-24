@@ -5,6 +5,15 @@ import AppKit
 struct UserGeneratedView: View {
     @EnvironmentObject var licenseManager: LicenseManager
     @EnvironmentObject var filterStore: VideoFilterStore
+    
+    @State private var scrollProxy: ScrollViewProxy?
+    @State private var scrollAnchorID = "topAnchor"
+
+    private func scrollToTop() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            scrollProxy?.scrollTo(scrollAnchorID, anchor: .top)
+        }
+    }
 
     @State private var showUI = false
     @State private var lastKnownLicenseStatus: Bool = false
@@ -22,6 +31,8 @@ struct UserGeneratedView: View {
 
     @State private var selectedSort: SortOption = .newest
     @State private var gridID = UUID()
+    
+    
 
     var body: some View {
         Group {
@@ -51,12 +62,18 @@ struct UserGeneratedView: View {
         }
         .onChange(of: selectedSort) { _ in
             applySortingAndFiltering()
+            scrollToTop()
         }
         .onChange(of: filterStore.selectedFilters) { _ in
             applySortingAndFiltering()
+            scrollToTop()
         }
         .onChange(of: filterStore.searchText) { _ in
             applySortingAndFiltering()
+            scrollToTop()
+        }
+        .onChange(of: pagination.currentPage) { _ in
+            scrollToTop()
         }
     }
 
@@ -88,21 +105,30 @@ struct UserGeneratedView: View {
             let columns = [GridItem(.adaptive(minimum: idealColumnWidth), spacing: spacing)]
 
             ZStack {
-                ScrollView {
-                    LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
-                        ForEach(Array(pagination.pagedItems.enumerated()), id: \..1.id) { index, item in
-                            WallperCard(item: item, index: index) {
-                                fullscreenVideo = item
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        Color.clear
+                            .frame(height: 0)
+                            .id(scrollAnchorID)
+
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
+                            ForEach(Array(pagination.pagedItems.enumerated()), id: \.1.id) { index, item in
+                                WallperCard(item: item, index: index) {
+                                    fullscreenVideo = item
+                                }
                             }
                         }
+                        .id(gridID)
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .animation(.easeInOut(duration: 0.3), value: pagination.currentPage)
+                        .padding(.bottom, 112)
                     }
-                    .id(gridID)
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
-                    .animation(.easeInOut(duration: 0.3), value: pagination.currentPage)
-                    .padding(.bottom, 112)
+                    .onAppear {
+                        scrollProxy = proxy
+                    }
+                    .background(Color("#101010"))
+                    .padding(.top, 8)
                 }
-                .background(Color("#101010"))
-                .padding(.top, 18)
 
                 VStack(spacing: 0) {
                     HStack {

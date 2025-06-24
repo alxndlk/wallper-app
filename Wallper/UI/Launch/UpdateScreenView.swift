@@ -20,7 +20,6 @@ struct UpdateScreenView: View {
 
     var body: some View {
         ZStack {
-            Color("#131313").ignoresSafeArea()
 
             if isVisible {
                 backgroundGlow
@@ -139,7 +138,6 @@ struct UpdateScreenView: View {
             if banned {
                 isBanned = true
                 isFinished = true
-                print("☠️ Banned.")
                 return
             }
 

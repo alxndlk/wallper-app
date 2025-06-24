@@ -8,7 +8,6 @@ struct FullscreenBottomBar: View {
     @Binding var video: VideoData
 
     @State private var isLiked = false
-    @State private var isLoopEnabled = false
 
     @State private var durationText: String = "~duration~"
     @State private var fileSizeText: String = "~filesize~"
@@ -77,21 +76,30 @@ struct FullscreenBottomBar: View {
     private var metadataSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             let author = video.author?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let author_name = video.author_name?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let category = video.category ?? ""
-            let ageText = video.age != nil ? " • \(video.age!)" : ""
-            let infoAvailable = metadataLoaded && !(category.isEmpty && durationText == "~duration~" && fileSizeText == "~filesize~" && resolutionText == "~quality~")
-            
+            let ageText = video.age?.isEmpty == false ? " • \(video.age!)" : ""
+
+            let infoAvailable = metadataLoaded && !(
+                category.isEmpty &&
+                durationText == "~duration~" &&
+                fileSizeText == "~filesize~" &&
+                resolutionText == "~quality~"
+            )
+
             let infoText = "\(category) • \(durationText) • \(fileSizeText) • \(resolutionText)\(ageText)"
-            
-            let authorText: String = {
+
+            let authorText: String =
+            {
                 if video.isPrivate == true {
                     return "Wallper Local Storage"
-                } else if !author.isEmpty {
-                    return "Created by \(author)"
+                } else if !author_name.isEmpty {
+                    return "Created by \(author_name)"
                 } else {
                     return "Stored by Wallper App"
                 }
             }()
+
 
             Text(authorText)
                 .foregroundColor(.white)
@@ -117,22 +125,10 @@ struct FullscreenBottomBar: View {
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            loopButton
             likeButton
             cancelButton
             applyButton
         }
-    }
-
-    private var loopButton: some View {
-        Button(action: toggleLoop) {
-            Image(systemName: isLoopEnabled ? "repeat.circle" : "repeat.circle.fill")
-                .font(.system(size: 14, weight: .medium))
-                .frame(width: 28, height: 28)
-                .foregroundColor(.white.opacity(isLoopEnabled ? 0.4 : 1.0))
-                .background(Circle().fill(Color.white.opacity(0.1)))
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 
     private var likeButton: some View {
@@ -181,7 +177,7 @@ struct FullscreenBottomBar: View {
         .buttonStyle(PlainButtonStyle())
     }
 
-    private func toggleLike() {
+    public func toggleLike() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
             if isLiked {
                 videoLibrary.unlikeVideo(video.id)
@@ -194,12 +190,6 @@ struct FullscreenBottomBar: View {
         }
     }
 
-    private func toggleLoop() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            isLoopEnabled.toggle()
-        }
-        NotificationCenter.default.post(name: .toggleLoopPlayback, object: nil)
-    }
 
     private func loadVideoMetadata() {
 
@@ -376,4 +366,8 @@ struct ApplyModalView: View {
             )
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
+}
+
+extension Notification.Name {
+    static let changePlaybackSpeed = Notification.Name("ChangePlaybackSpeed")
 }

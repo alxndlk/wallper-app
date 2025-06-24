@@ -2,11 +2,15 @@ import AppKit
 import SwiftUI
 
 final class LicenseWindowController {
-    static var shared: NSWindow?
+    private static var shared: NSWindow?
 
     static func show(licenseManager: LicenseManager) {
-        if let existing = shared {
-            existing.makeKeyAndOrderFront(nil)
+        if let window = shared {
+            if !window.isVisible {
+                window.makeKeyAndOrderFront(nil)
+            } else {
+                window.orderFrontRegardless()
+            }
             NSApp.activate(ignoringOtherApps: true)
             return
         }
@@ -14,7 +18,7 @@ final class LicenseWindowController {
         let view = LicenseWindowView()
             .environmentObject(licenseManager)
 
-        let hostingController = NSHostingController(rootView: view)
+        let controller = NSHostingController(rootView: view)
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 460, height: 600),
@@ -23,25 +27,24 @@ final class LicenseWindowController {
             defer: false
         )
 
-        window.center()
+        window.contentView = controller.view
         window.title = "Activate Wallper"
         window.isReleasedWhenClosed = false
-        window.contentView = hostingController.view
-        window.makeKeyAndOrderFront(nil)
         window.standardWindowButton(.zoomButton)?.isHidden = true
         window.standardWindowButton(.miniaturizeButton)?.isHidden = true
         window.titleVisibility = .visible
         window.titlebarAppearsTransparent = false
-        window.backgroundColor = .clear
         window.isOpaque = true
         window.appearance = NSAppearance(named: .darkAqua)
+        window.center()
+        window.makeKeyAndOrderFront(nil)
 
         NSApp.activate(ignoringOtherApps: true)
-
-        shared = window
 
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { _ in
             shared = nil
         }
+
+        shared = window
     }
 }

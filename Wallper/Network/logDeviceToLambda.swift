@@ -15,7 +15,7 @@ func logDeviceToLambda() {
     ]
 
     guard let body = try? JSONSerialization.data(withJSONObject: payload) else {
-        print("❌ Failed to encode payload")
+        print("Failed to encode payload")
         return
     }
 
@@ -26,19 +26,19 @@ func logDeviceToLambda() {
 
     URLSession.shared.dataTask(with: request) { data, response, error in
         if let error = error {
-            print("❌ Device log error:", error)
+            print("Device log error:", error)
             return
         }
 
         if let httpResponse = response as? HTTPURLResponse {
-            print("📬 Device Response status:", httpResponse.statusCode)
+            print("Device Response status:", httpResponse.statusCode)
         }
 
         if let data = data,
            let json = try? JSONSerialization.jsonObject(with: data) {
-            print("✅ Device log result:", json)
+            print("Device log result:", json)
         } else {
-            print("⚠️ No response data or failed to parse JSON")
+            print("No response data or failed to parse JSON")
         }
     }.resume()
 }

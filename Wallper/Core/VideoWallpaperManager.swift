@@ -10,15 +10,7 @@ class VideoWallpaperManager: NSObject {
 
     private override init() {
         super.init()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(toggleLooping),
-            name: .toggleLoopPlayback,
-            object: nil
-        )
     }
-
-    private var loopEnabled: Bool = true
 
     func setVideoAsWallpaper(
         from url: URL,
@@ -157,10 +149,6 @@ class VideoWallpaperManager: NSObject {
         }
     }
 
-    @objc private func toggleLooping() {
-        loopEnabled.toggle()
-    }
-
     override func observeValue(
         forKeyPath keyPath: String?,
         of object: Any?,
@@ -171,9 +159,9 @@ class VideoWallpaperManager: NSObject {
            let item = object as? AVPlayerItem {
             switch item.status {
             case .readyToPlay:
-                print("✅ AVPlayerItem ready to play")
+                print("AVPlayerItem ready to play")
             case .failed:
-                print("❌ AVPlayerItem failed: \(String(describing: item.error))")
+                print("AVPlayerItem failed: \(String(describing: item.error))")
             default:
                 break
             }
@@ -191,10 +179,6 @@ extension NSScreen {
         }
         return UUID().uuidString
     }
-}
-
-extension Notification.Name {
-    static let toggleLoopPlayback = Notification.Name("ToggleLoopPlayback")
 }
 
 extension NSBezierPath {

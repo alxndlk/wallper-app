@@ -18,6 +18,7 @@ class VideoFilterStore: ObservableObject {
             if !trimmedSearch.isEmpty {
                 let searchFields = [
                     video.author,
+                    video.author_name,
                     video.category,
                     video.resolution,
                     video.age,

@@ -73,7 +73,7 @@ class VideoDownloader: NSObject, ObservableObject, URLSessionDownloadDelegate {
                 }
             }
         } catch {
-            print("❌ Failed to move downloaded file: \(error)")
+            print("Failed to move downloaded file: \(error)")
         }
     }
 }

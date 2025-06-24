@@ -6,6 +6,15 @@ struct WallperView: View {
     @EnvironmentObject var licenseManager: LicenseManager
     @EnvironmentObject var filterStore: VideoFilterStore
 
+    @State private var scrollProxy: ScrollViewProxy?
+    @State private var scrollAnchorID = "topAnchor"
+
+    private func scrollToTop() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            scrollProxy?.scrollTo(scrollAnchorID, anchor: .top)
+        }
+    }
+    
     @State private var showUI = false
     @State private var lastKnownLicenseStatus: Bool = false
 
@@ -45,18 +54,20 @@ struct WallperView: View {
                 lastKnownLicenseStatus = licenseManager.hasLicense
             }
         }
-        .onChange(of: licenseManager.hasLicense) { newStatus in
-            applySortingAndFiltering()
-            lastKnownLicenseStatus = newStatus
-        }
         .onChange(of: selectedSort) { _ in
             applySortingAndFiltering()
+            scrollToTop()
         }
         .onChange(of: filterStore.selectedFilters) { _ in
             applySortingAndFiltering()
+            scrollToTop()
         }
         .onChange(of: filterStore.searchText) { _ in
             applySortingAndFiltering()
+            scrollToTop()
+        }
+        .onChange(of: pagination.currentPage) { _ in
+            scrollToTop()
         }
     }
 
@@ -87,28 +98,38 @@ struct WallperView: View {
 
     private var contentView: some View {
         GeometryReader { geometry in
-            let spacing: CGFloat = 2
+            let spacing: CGFloat = 1
             let totalWidth = geometry.size.width - 32
             let minColumns = 3
             let idealColumnWidth = totalWidth / CGFloat(minColumns) - spacing
             let columns = [GridItem(.adaptive(minimum: idealColumnWidth), spacing: spacing)]
 
             ZStack {
-                ScrollView {
-                    LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
-                        ForEach(Array(pagination.pagedItems.enumerated()), id: \..1.id) { index, item in
-                            WallperCard(item: item, index: index) {
-                                fullscreenVideo = item
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        Color.clear
+                            .frame(height: 0)
+                            .id(scrollAnchorID)
+
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: spacing) {
+                            ForEach(Array(pagination.pagedItems.enumerated()), id: \.1.id) { index, item in
+                                WallperCard(item: item, index: index) {
+                                    fullscreenVideo = item
+                                }
                             }
                         }
+                        .id(gridID)
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .animation(.easeInOut(duration: 0.3), value: pagination.currentPage)
+                        .padding(.bottom, 112)
                     }
-                    .id(gridID)
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
-                    .animation(.easeInOut(duration: 0.3), value: pagination.currentPage)
-                    .padding(.bottom, 112)
+                    .onAppear {
+                        scrollProxy = proxy
+                    }
+                    .background(Color("#101010"))
+                    .padding(.top, 8)
                 }
-                .background(Color("#101010"))
-                .padding(.top, 18)
+
 
                 VStack(spacing: 0) {
                     HStack {
@@ -149,7 +170,7 @@ struct WallperView: View {
                                         .foregroundColor(.white)
                                         .font(.system(size: 10))
                                 }
-                                .background(Color("#131313"))
+                                .background(.ultraThinMaterial)
                                 .clipShape(Circle())
                                 .padding(.vertical, 5)
                                 .disabled(pagination.currentPage == 0)
