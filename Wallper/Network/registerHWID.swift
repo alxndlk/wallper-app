@@ -30,9 +30,6 @@ func registerHWID(licenseKey: String, hwid: String, onResult: @escaping (License
         return
     }
 
-    print("📤 Sending POST to \(url)")
-    print("🔐 Payload: \(payload)")
-
     URLSession.shared.dataTask(with: request) { data, response, error in
         if let error = error {
             print("❌ Network error: \(error.localizedDescription)")
@@ -45,8 +42,6 @@ func registerHWID(licenseKey: String, hwid: String, onResult: @escaping (License
             onResult(.failure)
             return
         }
-
-        print("📡 Status Code: \(httpResponse.statusCode)")
 
         if let data = data, let responseText = String(data: data, encoding: .utf8) {
             print("📨 Response Body:\n\(responseText)")

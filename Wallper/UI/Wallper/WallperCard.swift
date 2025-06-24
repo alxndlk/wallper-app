@@ -10,6 +10,7 @@ struct WallperCard: View {
     var isSelected: Bool = false
     var onSelect: (() -> Void)? = nil
 
+
     @State private var isHovering = false
     @State private var isReadyToShow = false
     @State private var player: AVPlayer?
@@ -123,23 +124,53 @@ struct WallperCard: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        if showLikes && item.isPrivate != true {
+                        
+                        if (item.sizeMB != nil ) {
                             HStack(spacing: 6) {
-                                Image(systemName: "heart.fill")
-                                Text("\(videoLibrary.likes(for: item.id))")
+                                
+                                
+                                let videoSize = item.sizeMB?.rounded()
+                                
+                                Text(String(format: "%.0f MB", videoSize!))
+                                    .foregroundColor(.white)
                             }
                             .font(.system(size: 10, weight: .regular))
-                            .foregroundColor(.white)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(.ultraThinMaterial)
                             .clipShape(Capsule())
-                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 3)
+                            .contentShape(Rectangle())
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 0.35), value: showLikes)
+                            .padding(.leading, 8)
+                            .padding(.bottom, 8)
+                        }
+                        
+                        if showLikes && item.isPrivate != true {
+                            HStack(spacing: 6) {
+                                Image(systemName: videoLibrary.isLiked(item.id) ? "heart.fill" : "heart")
+                                    .foregroundColor(videoLibrary.isLiked(item.id) ? .red : .white)
+                                Text("\(videoLibrary.likes(for: item.id))")
+                                    .foregroundColor(.white)
+                            }
+                            .font(.system(size: 10, weight: .regular))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.ultraThinMaterial)
+                            .clipShape(Capsule())
+                            .contentShape(Rectangle())
+                            .highPriorityGesture(
+                                TapGesture().onEnded {
+                                    toggleLike()
+                                }
+                            )
                             .transition(.opacity)
                             .animation(.easeInOut(duration: 0.35), value: showLikes)
                             .padding(.trailing, 8)
                             .padding(.bottom, 8)
                         }
+
+
                         else {
                             HStack(spacing: 6) {
                                 Image(systemName: "lock.circle.dotted")
@@ -179,18 +210,33 @@ struct WallperCard: View {
                 player?.seek(to: .zero)
             }
         }
-        .simultaneousGesture(TapGesture().onEnded {
+        .onTapGesture {
             if !showTrash {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     onTap()
                 }
             }
-        })
+        }
+
         .onAppear {
             WallperCard.ensurePreviewsFolderExists()
             loadPreviewImage()
             scheduleAppear()
             showLikes = true
+        }
+    }
+    
+    private func toggleLike() {
+        let liked = videoLibrary.isLiked(item.id)
+        
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            if liked {
+                videoLibrary.unlikeVideo(item.id)
+                Task { await videoLibrary.updateLikes(videoID: item.id, increment: -1) }
+            } else {
+                videoLibrary.likeVideo(item.id)
+                Task { await videoLibrary.updateLikes(videoID: item.id, increment: 1) }
+            }
         }
     }
 
@@ -199,6 +245,7 @@ struct WallperCard: View {
         player = AVPlayer(url: url)
         player?.volume = 0
     }
+    
 
     static func ensurePreviewsFolderExists() {
         let folder = Self.previewsFolder

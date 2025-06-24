@@ -18,7 +18,7 @@ class LicenseManager: ObservableObject {
 
         let body = ["hwidid": hwidid]
         guard let jsonData = try? JSONEncoder().encode(body) else {
-            print("❌ Failed to encode JSON body")
+            print("Failed to encode JSON body")
             updateState(found: false, licenseKey: nil, completion: completion)
             return
         }
@@ -27,14 +27,14 @@ class LicenseManager: ObservableObject {
 
         URLSession.shared.dataTask(with: request) { data, _, error in
             if let error = error {
-                print("❌ [LicenseManager] Network error:", error.localizedDescription)
+                print("[LicenseManager] Network error:", error.localizedDescription)
                 self.updateState(found: false, licenseKey: nil, completion: completion)
                 return
             }
 
             guard let data = data,
                   let response = try? JSONDecoder().decode(LicenseResponse.self, from: data) else {
-                print("⚠️ Failed to decode response")
+                print("Failed to decode response")
                 self.updateState(found: false, licenseKey: nil, completion: completion)
                 return
             }
@@ -48,7 +48,7 @@ class LicenseManager: ObservableObject {
             self.hasLicense = found
             self.licenseKey = licenseKey
             self.isChecked = true
-            print("✅ [LicenseManager] Updated — hasLicense: \(found), key: \(licenseKey ?? "nil")")
+            print("[LicenseManager] Updated — hasLicense: \(found), key: \(licenseKey ?? "nil")")
             completion?()
         }
     }

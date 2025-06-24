@@ -4,6 +4,7 @@ struct CustomPublishModal: View {
     let fileName: String
     @Binding var selectedCategory: String
     @Binding var selectedAge: String
+    @Binding var selectedAuthorName: String
     var onPublish: () -> Void
     var onCancel: () -> Void
 
@@ -18,11 +19,11 @@ struct CustomPublishModal: View {
     private let ageRatings = ["", "0+", "6+", "12+", "16+", "18+"]
 
     private var isReady: Bool {
-        !selectedCategory.isEmpty && !selectedAge.isEmpty && !isPublishing
+        !selectedCategory.isEmpty && !selectedAge.isEmpty && !selectedAuthorName.isEmpty && !isPublishing
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Text("Publish \(fileName)?")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white)
@@ -31,6 +32,22 @@ struct CustomPublishModal: View {
                 .font(.system(size: 12))
                 .foregroundColor(.white.opacity(0.6))
                 .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+            
+            TextField("Author Name", text: $selectedAuthorName)
+                .textFieldStyle(PlainTextFieldStyle())
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white.opacity(0.05))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+                .foregroundColor(.white)
+                .font(.system(size: 12))
                 .frame(maxWidth: 280)
 
             HStack(spacing: 8) {
@@ -87,7 +104,7 @@ struct CustomPublishModal: View {
         .fixedSize()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color("#121212"))
+                .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)

@@ -374,6 +374,7 @@ struct UploadFormView: View {
     
     @State private var selectedCategory: String = ""
     @State private var selectedAge: String = ""
+    @State private var selectedAuthorName: String = ""
     
     var onCompleteUpload: () -> Void
 
@@ -422,6 +423,7 @@ struct UploadFormView: View {
                         fileName: meta.name,
                         selectedCategory: $selectedCategory,
                         selectedAge: $selectedAge,
+                        selectedAuthorName: $selectedAuthorName,
                         onPublish: {
                             guard let url = videoURL else { return }
                             
@@ -431,6 +433,7 @@ struct UploadFormView: View {
                                 meta: meta,
                                 category: selectedCategory,
                                 age: selectedAge,
+                                author_name: selectedAuthorName,
                                 hwidid: HWIDProvider.getHWID()
                             ) { result in
                                 DispatchQueue.main.async {

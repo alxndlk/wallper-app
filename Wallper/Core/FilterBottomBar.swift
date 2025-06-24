@@ -79,10 +79,11 @@ struct FilterBottomBar: View {
             Spacer()
 
             HStack(spacing: 6) {
-                if !filterStore.selectedFilters.isEmpty || !filterStore.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if hasActiveFilters {
                     Button {
                         withAnimation(.spring()) {
                             filterStore.resetFilters()
+                            selectedFilters.removeAll()
                         }
                     } label: {
                         Text("Reset")

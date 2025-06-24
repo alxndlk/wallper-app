@@ -28,11 +28,9 @@ class DeviceLoader: ObservableObject {
     func loadAllDevices() {
         Task {
             do {
-                print("🔄 Requesting device info from Lambda...")
-
                 guard let urlString = Env.shared.get("LAMBDA_DEVICE_TRACK_URL"),
                       let url = URL(string: urlString) else {
-                    print("❌ Invalid URL for Lambda.")
+                    print("Invalid URL for Lambda.")
                     await MainActor.run {
                         self.devices = [self.currentDevice]
                         self.licenseStatus = .standalone
@@ -70,7 +68,7 @@ class DeviceLoader: ObservableObject {
                 }
 
             } catch {
-                print("❌ Lambda error: \(error.localizedDescription)")
+                print("Lambda error: \(error.localizedDescription)")
                 await MainActor.run {
                     self.devices = [self.currentDevice]
                     self.licenseStatus = .standalone

@@ -6,6 +6,7 @@ struct VideoPublishHandler {
         meta: UploadMetadata,
         category: String,
         age: String,
+        author_name: String,
         hwidid: String,
         completion: @escaping (Result<Void, Error>) -> Void
     ) {
@@ -24,6 +25,7 @@ struct VideoPublishHandler {
                     "id": uuid,
                     "age": age,
                     "author": hwidid,
+                    "author_name": author_name,
                     "category": category,
                     "createdAt": ISO8601DateFormatter().string(from: Date()),
                     "duration": parseDuration(meta.duration),
@@ -54,12 +56,11 @@ struct VideoPublishHandler {
         guard let basePath = Env.shared.get("S3_MODERATE_BASE_URL"),
               let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
               let url = URL(string: "\(basePath)\(encodedKey)") else {
-            print("❌ Invalid or unencodable MinIO URL for key: \(key)")
+            print("Invalid or unencodable URL for key: \(key)")
             completion(.failure(NSError(domain: "InvalidMinIOURL", code: 0)))
             return
         }
 
-        print("📤 Uploading directly to MinIO at \(url.absoluteString)")
 
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
@@ -68,19 +69,19 @@ struct VideoPublishHandler {
         let task = URLSession.shared.uploadTask(with: request, from: fileData) { _, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    print("❌ Upload error:", error)
+                    print("Upload error:", error)
                     completion(.failure(error))
                 } else if let httpResponse = response as? HTTPURLResponse {
-                    print("📬 Upload response status: \(httpResponse.statusCode)")
+                    print("Upload response status: \(httpResponse.statusCode)")
                     if (200...299).contains(httpResponse.statusCode) {
                         completion(.success(()))
                     } else {
                         let errorMsg = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                        print("⚠️ Upload failed with status \(httpResponse.statusCode): \(errorMsg)")
+                        print("Upload failed with status \(httpResponse.statusCode): \(errorMsg)")
                         completion(.failure(NSError(domain: "UploadFailed", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMsg])))
                     }
                 } else {
-                    print("❌ Unknown upload error (no response)")
+                    print("Unknown upload error (no response)")
                     completion(.failure(NSError(domain: "UnknownUploadError", code: 0)))
                 }
             }

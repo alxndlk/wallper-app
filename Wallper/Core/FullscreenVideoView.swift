@@ -23,93 +23,35 @@ struct FullscreenVideoView: View {
                 .ignoresSafeArea()
                 .opacity(isReady ? 1 : 0)
                 .animation(.easeInOut(duration: 0.4), value: isReady)
-                .onAppear {
-                    guard let remoteURL = URL(string: item.url) else { return }
-                    fetchFileSize(from: item.url)
 
-                    getCachedVideoURL(from: remoteURL,
-                                      onProgress: { loaded, total in
-                        self.loadedMB = loaded
-                        self.fileSizeMB = total
-                        self.loadingProgress = total > 0 ? loaded / total : 0
-                    },
-                                      onComplete: { localURL in
-                        self.cachedVideoURL = localURL
+            if !isReady {
+                VStack(spacing: 16) {
+                    if let total = fileSizeMB {
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .frame(width: 180, height: 6)
+                                .foregroundColor(.white.opacity(0.2))
 
-                        let avItem = AVPlayerItem(url: localURL)
-                        let asset = AVAsset(url: localURL)
-
-                        let durationInSeconds = CMTimeGetSeconds(asset.duration)
-                        self.duration = String(format: "%.0fs", durationInSeconds)
-
-                        if let track = asset.tracks(withMediaType: .video).first {
-                            let size = track.naturalSize.applying(track.preferredTransform)
-                            self.resolution = "\(Int(abs(size.width)))x\(Int(abs(size.height)))"
+                            Capsule()
+                                .frame(width: CGFloat(180 * loadingProgress), height: 4)
+                                .foregroundColor(.white)
                         }
+                        .animation(.easeInOut(duration: 0.2), value: loadingProgress)
 
-                        player.replaceCurrentItem(with: avItem)
-                        player.isMuted = true
-                        player.actionAtItemEnd = .none
-
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isReady = true
-                        }
-
-                        player.play()
-
-                        NotificationCenter.default.addObserver(
-                            forName: .AVPlayerItemDidPlayToEndTime,
-                            object: avItem,
-                            queue: .main
-                        ) { _ in
-                            player.seek(to: .zero)
-                            player.play()
-                        }
-                    })
-                }
-
-            
-            let matchingIndex = videoLibrary.allVideos.firstIndex {
-                $0.id == item.id || URL(string: $0.url)?.lastPathComponent == URL(string: item.url)?.lastPathComponent
-            }
-
-            if isReady {
-                Group {
-                    if let index = matchingIndex, let localURL = cachedVideoURL {
-                        FullscreenBottomBar(
-                            onApply: { screenIndex, applyToAll in
-                                VideoWallpaperManager.shared.setVideoAsWallpaper(
-                                    from: localURL,
-                                    screenIndex: screenIndex,
-                                    applyToAll: applyToAll
-                                )
-                            },
-                            onCancel: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    fullscreenVideo = nil
-                                }
-                            },
-                            video: $videoLibrary.allVideos[index]
-                        )
+                        Text(String(format: "Loading %.1f MB of %.1f MB", loadedMB, total))
+                            .foregroundColor(.white)
+                            .font(.caption)
+                        Text(String(format: "Esc key to cancel download", loadedMB, total))
+                            .foregroundColor(.white)
+                            .font(.caption)
                     } else {
-                        FullscreenBottomBar(
-                            onApply: { _, _ in },
-                            onCancel: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    fullscreenVideo = nil
-                                }
-                            },
-                            video: .constant(item)
-                        )
+                        Text("Preparing video...")
+                            .foregroundColor(.white.opacity(0.7))
+                            .font(.caption)
                     }
                 }
-                .environmentObject(videoLibrary)
-                .frame(maxWidth: 700)
-                .padding(.horizontal)
-                .padding(.bottom, 24)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.easeInOut(duration: 0.4), value: isReady)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.ultraThinMaterial)
             }
 
             LinearGradient(
@@ -124,24 +66,27 @@ struct FullscreenVideoView: View {
                 Spacer().frame(height: 100)
                 Text(Date(), format: .dateTime.weekday(.wide).month(.wide).day())
                     .font(.system(size: 32, weight: .medium))
-                    .foregroundColor(.white.opacity(0.60))
-                    .transition(.opacity)
-
+                    .foregroundColor(.white)
                 Text(Date(), style: .time)
                     .font(.system(size: 132, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.60))
+                    .foregroundColor(.white)
                     .shadow(radius: 30)
-                    .transition(.opacity)
-
                 Spacer()
             }
             .animation(.easeInOut(duration: 0.4), value: isReady)
 
             if isReady {
+                let matchingIndex = videoLibrary.allVideos.firstIndex {
+                    $0.id == item.id || URL(string: $0.url)?.lastPathComponent == URL(string: item.url)?.lastPathComponent
+                }
+
                 Group {
                     if let index = matchingIndex, let localURL = cachedVideoURL {
                         FullscreenBottomBar(
                             onApply: { screenIndex, applyToAll in
+                                print("Applying cached video: \(localURL.path)")
+                                print("screenIndex: \(screenIndex), applyToAll: \(applyToAll)")
+
                                 VideoWallpaperManager.shared.setVideoAsWallpaper(
                                     from: localURL,
                                     screenIndex: screenIndex,
@@ -157,7 +102,10 @@ struct FullscreenVideoView: View {
                         )
                     } else {
                         FullscreenBottomBar(
-                            onApply: { _, _ in },
+                            onApply: { screenIndex, applyToAll in
+                                print("No matching localURL found for item \(item.id)")
+                                print("screenIndex: \(screenIndex), applyToAll: \(applyToAll)")
+                            },
                             onCancel: {
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     fullscreenVideo = nil
@@ -178,6 +126,54 @@ struct FullscreenVideoView: View {
         }
         .transition(.scale(scale: 0.9).combined(with: .opacity))
         .zIndex(10)
+        .onAppear {
+            guard let remoteURL = URL(string: item.url) else { return }
+
+            fetchFileSize(from: item.url)
+
+            getCachedVideoURL(from: remoteURL,
+                              onProgress: { loaded, total in
+                DispatchQueue.main.async {
+                    self.loadedMB = loaded
+                    self.fileSizeMB = total
+                    self.loadingProgress = total > 0 ? loaded / total : 0
+                }
+            }, onComplete: { localURL in
+                DispatchQueue.main.async {
+                    self.cachedVideoURL = localURL
+
+                    let asset = AVAsset(url: localURL)
+                    let avItem = AVPlayerItem(asset: asset)
+
+                    let durationInSeconds = CMTimeGetSeconds(asset.duration)
+                    self.duration = String(format: "%.0fs", durationInSeconds)
+
+                    if let track = asset.tracks(withMediaType: .video).first {
+                        let size = track.naturalSize.applying(track.preferredTransform)
+                        self.resolution = "\(Int(abs(size.width)))x\(Int(abs(size.height)))"
+                    }
+
+                    player.replaceCurrentItem(with: avItem)
+                    player.isMuted = true
+                    player.actionAtItemEnd = .none
+
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isReady = true
+                    }
+
+                    player.play()
+
+                    NotificationCenter.default.addObserver(
+                        forName: .AVPlayerItemDidPlayToEndTime,
+                        object: avItem,
+                        queue: .main
+                    ) { _ in
+                        player.seek(to: .zero)
+                        player.play()
+                    }
+                }
+            })
+        }
     }
 
     private func fetchFileSize(from urlString: String) {
@@ -251,7 +247,6 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
                     didWriteData bytesWritten: Int64,
                     totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64) {
-
         let totalMB = Double(totalBytesExpectedToWrite) / 1024 / 1024
         let loadedMB = Double(totalBytesWritten) / 1024 / 1024
         onProgress(loadedMB, totalMB)
@@ -262,14 +257,12 @@ private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
         try? FileManager.default.removeItem(at: destinationURL)
         do {
             try FileManager.default.copyItem(at: location, to: destinationURL)
-
             DispatchQueue.main.async {
                 self.videoStore.addDownloadedVideo(id: self.videoID)
             }
-
             onComplete(destinationURL)
         } catch {
-            print("❌ Failed to move file: \(error)")
+            print("Failed to move file: \(error)")
         }
     }
 }
