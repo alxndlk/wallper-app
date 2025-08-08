@@ -1,19 +1,15 @@
-<img width="256" height="256" alt="w" src="https://github.com/user-attachments/assets/dcb8d175-408b-448d-9f85-6b8c04746eb0" />
+<div align="center">
+<img width="156" height="156" alt="image" src="https://github.com/user-attachments/assets/ba9fd97a-3798-4d1a-bd6e-07f13555efa6" />
 
-<p align="left">
-<br />
-  <a href="https://www.wallper.app/">
-    <img src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge">
-  </a>
-  <br />
-  <a href="https://github.com/alxndlk/wallper-app">
-    <img src="https://img.shields.io/github/stars/alxndlk/wallper-app?style=for-the-badge">
-  </a>
-<br />
-  <a href="https://discord.gg/ksxrdnETuc">
-    <img src="https://img.shields.io/badge/Join-Discord-7289da?style=for-the-badge">
-  </a>
-</p>
+  <h1>Wallper App</h1>
+
+<a href="https://github.com/alxndlk"><img alt="Vercel logo" src="https://img.shields.io/badge/MADE%20BY%20alxndlk-000000.svg?style=for-the-badge&logo=Github&labelColor=000"></a>
+<a href="https://github.com/alxndlk/wallper-app"><img alt="Star on GitHub" src="https://img.shields.io/github/stars/alxndlk/wallper-app?style=for-the-badge&logo=Github&labelColor=000"></a>
+<a><img alt="License" src="https://img.shields.io/npm/l/next.svg?style=for-the-badge&labelColor=000000"></a>
+<a href="https://discord.gg/ksxrdnETuc"><img alt="Join the community on Discord" src="https://img.shields.io/badge/Join%20the%20community-7289da.svg?style=for-the-badge&logo=Discord&labelColor=000000&logoWidth=20"></a>
+
+</div>
+
 
 ## Overview
 
