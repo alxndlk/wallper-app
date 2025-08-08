@@ -1,55 +1,64 @@
-# 🌐 [www.wallper.app](https://www.wallper.app/) — Support the Project
+# [www.wallper.app](https://www.wallper.app) — Support the Project
 
-Wallper is an indie macOS app built with care. If you like it — [consider supporting us](https://www.wallper.app/) to keep the updates coming 💙
+Wallper is an independent macOS app built with care. If you want to see steady updates and more features, consider supporting the project at [wallper.app](https://www.wallper.app).
 
----
-
-# Wallper — Stunning 4K Live Wallpapers for macOS
-
-**Wallper** is a beautifully designed macOS application that brings your desktop to life with dynamic, 4K live wallpapers. With a curated video library, smart filtering, and a polished SwiftUI interface, Wallper is more than just a wallpaper app — it’s a creative desktop experience.
-
----
-
-## ✨ Features
-
-- 🎥 **Live Video Wallpapers** — Apply gorgeous 4K video loops directly to your desktop.
-- 🔍 **Smart Filters** — Search and filter wallpapers by resolution, duration, size, category, and age.
-- 📁 **Daily Shuffle** — Automatically set a new wallpaper each day from your library.
-- ⚙️ **Device Sync** — Track active devices and license status.
-- ☁️ **Cloud-Powered Metadata** — Video data is fetched and updated through AWS Lambda + S3/MinIO.
-- 📤 **User Submissions** — Upload your own creations to share with the community.
+<p align="left">
+  <a href="https://www.wallper.app/">
+    <img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge">
+  </a>
+  <a href="https://github.com/alxndlk/wallper-app">
+    <img alt="Star on GitHub" src="https://img.shields.io/github/stars/alxndlk/wallper-app?style=for-the-badge">
+  </a>
+  <a href="https://discord.gg/ksxrdnETuc">
+    <img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-7289da?style=for-the-badge">
+  </a>
+</p>
 
 ---
 
-## 🛠 Built With
+# Wallper — 4K Live Wallpapers for macOS
 
-- `SwiftUI` — for declarative, responsive macOS UI
-- `AVKit` — for smooth video rendering
-- `AWS Lambda` — for dynamic metadata, likes, and licensing
-- `S3` — for storage and video streaming
+Wallper brings your desktop to life with clean, looping 4K videos. Simple to use, fast in practice, and built to feel native on macOS.
 
 ---
 
-## 🚀 Getting Started
+## Features
 
-### Prerequisites
+- Live video wallpapers in 4K
+- Smart filters: resolution, duration, size, category, age
+- Daily Shuffle: automatically apply a new wallpaper each day
+- Device sync: track active devices and license status
+- Cloud-backed metadata and likes (AWS Lambda + S3/MinIO)
+- Community uploads (manual review before publishing)
 
+---
+
+## Built With
+
+- SwiftUI for the macOS interface
+- AVKit for video playback
+- AWS Lambda for dynamic metadata, likes, and licensing
+- S3/MinIO for storage and streaming
+
+---
+
+## Getting Started
+
+Requirements:
 - macOS 14.0+
 - Xcode 14+
 - Swift 5.7+
 
-### Installation
-
+Install:
 ```bash
 git clone https://github.com/alxndlk/wallper-app.git
 cd wallper-app
 open Wallper.xcodeproj
 ```
 
-
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Wallper/
@@ -63,22 +72,21 @@ Wallper/
 
 ---
 
-## 🔒 License
+## License
 
-This project is currently **private** and intended for educational or experimental use.
-
----
-
-## 💡 Credits
-
-Developed with ❤️ by [@alxndlk](https://github.com/alxndlk).  
-Inspired by Wallpaper Engine and the macOS aesthetic.
+This project is private and intended for educational or experimental use.
 
 ---
 
-## 📬 Want to Contribute?
+## Credits
 
-Feature suggestions, bug reports, and pull requests are always welcome.  
-Just open an [issue](https://github.com/alxndlk/wallper-app/issues) or start a discussion.
+Developed by [@alxndlk](https://github.com/alxndlk). Inspired by Wallpaper Engine and the macOS aesthetic.
 
-Contact: support@wallper.app | [Telegram](https://t.me/alxndlk)
+---
+
+## Contribute
+
+Ideas, issues, or feedback are welcome. Open an issue or reach out:
+- Issues: https://github.com/alxndlk/wallper-app/issues
+- Email: support@wallper.app
+- Telegram: https://t.me/alxndlk
