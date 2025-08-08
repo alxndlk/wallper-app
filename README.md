@@ -37,7 +37,6 @@
 ```bash
 git clone https://github.com/alxndlk/wallper-app.git
 cd wallper-app
-open Wallper.xcodeproj
 ```
 Requires macOS 14.0+, Xcode 14+, Swift 5.7+.
 
