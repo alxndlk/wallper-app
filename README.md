@@ -1,92 +1,61 @@
-# [www.wallper.app](https://www.wallper.app) — Support the Project
-
-Wallper is an independent macOS app built with care. If you want to see steady updates and more features, consider supporting the project at [wallper.app](https://www.wallper.app).
+<img width="256" height="256" alt="w" src="https://github.com/user-attachments/assets/dcb8d175-408b-448d-9f85-6b8c04746eb0" />
 
 <p align="left">
+<br />
   <a href="https://www.wallper.app/">
-    <img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge">
+    <img src="https://img.shields.io/badge/Download-macOS-000000?style=for-the-badge">
   </a>
+  <br />
   <a href="https://github.com/alxndlk/wallper-app">
-    <img alt="Star on GitHub" src="https://img.shields.io/github/stars/alxndlk/wallper-app?style=for-the-badge">
+    <img src="https://img.shields.io/github/stars/alxndlk/wallper-app?style=for-the-badge">
   </a>
+<br />
   <a href="https://discord.gg/ksxrdnETuc">
-    <img alt="Join Discord" src="https://img.shields.io/badge/Join-Discord-7289da?style=for-the-badge">
+    <img src="https://img.shields.io/badge/Join-Discord-7289da?style=for-the-badge">
   </a>
 </p>
 
----
+## Overview
 
-# Wallper — 4K Live Wallpapers for macOS
+- 4K/60fps H.264/H.265 video wallpapers (MP4)  
+- Built with SwiftUI, AVKit, Combine, CoreAnimation, CoreGraphics, CoreImage  
+- Metal-optimized rendering, low-latency decoding  
+- Smart filters: resolution, duration, size, category, created date  
+- Daily Shuffle, multi-device sync, license validation  
+- AWS Lambda (Node.js runtime), API Gateway, S3/MinIO storage  
+- CloudFront CDN delivery, DynamoDB for likes/metadata  
+- Secure with macOS App Sandbox, Hardened Runtime, Code Signing, Notarization  
+- Efficient caching with NSCache + URLSession background downloads  
+- JSON-based API communication, GZIP compression, CORS enabled
 
-Wallper brings your desktop to life with clean, looping 4K videos. Simple to use, fast in practice, and built to feel native on macOS.
+## Tech Stack
 
----
+**Frontend:** SwiftUI, AVKit, Combine, CoreAnimation, Metal, CoreImage  
+**Backend:** AWS Lambda, API Gateway, S3, MinIO, DynamoDB, CloudFront  
+**Build Tools:** Xcode, SwiftPM, Shell scripts  
+**Infra:** HTTPS, JSON APIs, GZIP, CORS  
+**DevOps:** GitHub Actions, macOS code signing & notarization
 
-## Features
+## Installation
 
-- Live video wallpapers in 4K
-- Smart filters: resolution, duration, size, category, age
-- Daily Shuffle: automatically apply a new wallpaper each day
-- Device sync: track active devices and license status
-- Cloud-backed metadata and likes (AWS Lambda + S3/MinIO)
-- Community uploads (manual review before publishing)
-
----
-
-## Built With
-
-- SwiftUI for the macOS interface
-- AVKit for video playback
-- AWS Lambda for dynamic metadata, likes, and licensing
-- S3/MinIO for storage and streaming
-
----
-
-## Getting Started
-
-Requirements:
-- macOS 14.0+
-- Xcode 14+
-- Swift 5.7+
-
-Install:
 ```bash
 git clone https://github.com/alxndlk/wallper-app.git
 cd wallper-app
 open Wallper.xcodeproj
 ```
-
----
+Requires macOS 14.0+, Xcode 14+, Swift 5.7+.
 
 ## Project Structure
 
 ```
-Wallper/
-├── App/              # App entry point & environment handling
-├── Core/             # Reusable controllers and playback components
-├── Network/          # AWS Lambda interactions and device tracking
-├── Shared/           # View modifiers and reusable UI components
-├── Store/            # App state: video filters, library, likes
-├── UI/               # SwiftUI views grouped by feature
+App/      — App entry & environment
+Core/     — Playback controllers & caching
+Network/  — API communication & device sync
+Shared/   — UI utilities & modifiers
+Store/    — State management (filters, library, likes)
+UI/       — SwiftUI views by feature
 ```
-
----
 
 ## License
 
-This project is private and intended for educational or experimental use.
-
----
-
-## Credits
-
-Developed by [@alxndlk](https://github.com/alxndlk). Inspired by Wallpaper Engine and the macOS aesthetic.
-
----
-
-## Contribute
-
-Ideas, issues, or feedback are welcome. Open an issue or reach out:
-- Issues: https://github.com/alxndlk/wallper-app/issues
-- Email: support@wallper.app
-- Telegram: https://t.me/alxndlk
+Private project for educational and experimental purposes.
